@@ -28,12 +28,14 @@ module ActionView::Helpers
 
     # Added "globalize_inputs" that uses standard Twitter Bootstrap tabs.
     def globalize_inputs(*args, &proc)
+      locales = args[0]
+      args.shift
       index = options[:child_index] || "#{self.object.class.to_s}-#{self.object.object_id}"
       linker = ActiveSupport::SafeBuffer.new
       fields = ActiveSupport::SafeBuffer.new
 
-      ::I18n.available_locales.each do |locale|
-        active_class = ::I18n.locale == locale ? "in active" : ""
+      locales.each do |locale|
+        active_class = ::I18n.locale.to_s == locale.to_s ? "active" : ""
         url          = "lang-#{locale}-#{index}"
         linker << self.template.content_tag(:li,
           self.template.content_tag(:a,
@@ -44,9 +46,9 @@ module ActionView::Helpers
           class: "#{active_class}",
         )
         fields << self.template.content_tag(:div,
-          self.semantic_fields_for(*(args.dup << self.object.translation_for(locale)), &proc),
+          self.fields_for(*(args.dup << self.object.translation_for(locale)), &proc),
           :id => "#{url}",
-          class: "tab-pane fade #{active_class}"
+          class: "tab-pane #{active_class}"
         )
       end
 
@@ -56,7 +58,7 @@ module ActionView::Helpers
       html = self.template.content_tag(:div,
         linker + fields,
         id: "language-tabs-#{index}",
-        class: "tabbable tabs-left"
+        class: "tabbable"
       )
     end
   end
